@@ -19,4 +19,12 @@ public class Transaction {
         return timestamp;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Transaction{");
+        sb.append("amount=").append(amount);
+        sb.append(", timestamp=").append(timestamp);
+        sb.append('}');
+        return sb.toString();
+    }
 }

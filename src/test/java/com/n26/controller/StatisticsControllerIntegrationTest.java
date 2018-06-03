@@ -12,6 +12,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.Clock;
@@ -54,13 +55,14 @@ public class StatisticsControllerIntegrationTest {
     }
 
     @Test
-    public void shouldGetCorrectStatisticsForLast60Seconds() {
+    @DirtiesContext
+    public void shouldGetCorrectStatisticsForLast60SecondsWhenConcurrentRequests() throws InterruptedException {
         // having
         final Instant now = Instant.now();
 
         // Save stale transactions
+        when(IntegrationTestConfiguration.clock.instant()).thenReturn(now);
         for (int i = 0; i < 5; i++) {
-            when(IntegrationTestConfiguration.clock.instant()).thenReturn(now);
             restTemplate.postForEntity("/transactions", new TransactionVO(20.0, now.toEpochMilli()), Object.class);
         }
 
@@ -71,13 +73,13 @@ public class StatisticsControllerIntegrationTest {
         double expectedMin = Double.MAX_VALUE;
         double expectedMax = Double.MIN_VALUE;
 
+        when(IntegrationTestConfiguration.clock.instant()).thenReturn(after30Seconds);
         for (int i = 0; i < 3; i++) {
             final double amount = 1000 * Math.random();
             expectedAvg = (expectedAvg * i + amount) / (i + 1);
             expectedMax = expectedMax > amount ? expectedMax : amount;
             expectedMin = expectedMin < amount ? expectedMin : amount;
             expectedSum += amount;
-            when(IntegrationTestConfiguration.clock.instant()).thenReturn(after30Seconds);
             restTemplate.postForEntity("/transactions", new TransactionVO(amount, after30Seconds.toEpochMilli()), Object.class);
         }
 
