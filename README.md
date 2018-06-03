@@ -11,3 +11,7 @@ Do ```mvn package spring-boot:repackage``` and run ```java -jar target/task-1.0-
 
 ## Run Integration Tests
 ```mvn verify```
+
+## Improvements to be done
+
+- Better error handling in case there are no transactions for last 60 seconds, instead of 404 status code as per current handling
